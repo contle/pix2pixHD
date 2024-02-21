@@ -3,6 +3,11 @@ import shutil
 from pathlib import Path
 import os
 
+import concurrent.futures
+
+def copy_file(src, dst):
+    shutil.copy(src, dst)
+
 
 def main(args):
     input_path = Path(args.input_path)
@@ -15,14 +20,21 @@ def main(args):
     all_nuscenes_image_files = list(nuscenes_path.glob(f'**/*{args.file_extension}'))
     all_nuscenes_image_filenames = [file.name for file in all_nuscenes_image_files]
 
-    for i, img_file in enumerate(all_image_files):
-        nuscenes_idx = all_nuscenes_image_filenames.index(img_file.name)
-        nuscenes_eqiv = all_nuscenes_image_files[nuscenes_idx]
-        
-        shutil.copy(img_file, output_path / "train_A" / img_file.name)
-        shutil.copy(nuscenes_eqiv, output_path / "train_B" / img_file.name)
-        if i % 50 == 0:
-            print(i)
+    results = []
+    with concurrent.futures.ThreadPoolExecutor(16) as executor:
+        for i, img_file in enumerate(all_image_files):
+            nuscenes_idx = all_nuscenes_image_filenames.index(img_file.name)
+            nuscenes_eqiv = all_nuscenes_image_files[nuscenes_idx]
+            
+            res = executor.submit(copy_file, (img_file, output_path / "train_A" / img_file.name))
+            results.append(res)
+            res = executor.submit(copy_file, (nuscenes_eqiv, output_path / "train_B" / img_file.name))
+            results.append(res)
+            # shutil.copy(img_file, output_path / "train_A" / img_file.name)
+            # shutil.copy(nuscenes_eqiv, output_path / "train_B" / img_file.name)
+        for j in range(i):
+            if j % 50 == 0:
+                print(j)
 
     
                             
