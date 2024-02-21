@@ -26,9 +26,9 @@ def main(args):
             nuscenes_idx = all_nuscenes_image_filenames.index(img_file.name)
             nuscenes_eqiv = all_nuscenes_image_files[nuscenes_idx]
             
-            res = executor.submit(copy_file, (img_file, output_path / "train_A" / img_file.name))
+            res = executor.submit(copy_file, (img_file, output_path / "train_B" / img_file.name))
             results.append(res)
-            res = executor.submit(copy_file, (nuscenes_eqiv, output_path / "train_B" / img_file.name))
+            res = executor.submit(copy_file, (nuscenes_eqiv, output_path / "train_A" / img_file.name))
             results.append(res)
             # shutil.copy(img_file, output_path / "train_A" / img_file.name)
             # shutil.copy(nuscenes_eqiv, output_path / "train_B" / img_file.name)
