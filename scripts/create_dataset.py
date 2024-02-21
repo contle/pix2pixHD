@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 import os
 
+
 def main(args):
     input_path = Path(args.input_path)
     output_path = Path(args.output_path)
@@ -11,16 +12,20 @@ def main(args):
     os.makedirs(output_path / "train_A", exist_ok=True)
     os.makedirs(output_path / "train_B", exist_ok=True)
     all_image_files = input_path.glob(f'**/*{args.file_extension}')
+    all_nuscenes_image_files = list(nuscenes_path.glob(f'**/*{args.file_extension}'))
+    all_nuscenes_image_filenames = [file.name for file in all_nuscenes_image_files]
+
     for i, img_file in enumerate(all_image_files):
-        nuscenes_eqiv = list(nuscenes_path.glob(f'**/{img_file.name}'))
-        assert len(nuscenes_eqiv) == 1
-        nuscenes_eqiv = nuscenes_eqiv[0]
+        nuscenes_idx = all_nuscenes_image_filenames.index(img_file.name)
+        nuscenes_eqiv = all_nuscenes_image_files[nuscenes_idx]
+        
         shutil.copy(img_file, output_path / "train_A" / img_file.name)
         shutil.copy(nuscenes_eqiv, output_path / "train_B" / img_file.name)
-        if i % 50:
+        if i % 50 == 0:
             print(i)
-    
 
+    
+                            
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-path", type=str, help="Path to where images are stored in any folder structure")
