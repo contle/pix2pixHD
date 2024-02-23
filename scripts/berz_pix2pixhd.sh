@@ -11,6 +11,18 @@
 name=${1:?"No name given"}
 script=${SCRIPT:-train_1024_24G.sh}
 dataroot=${DATAROOT:-./data}
+batchsize=${BATCHSIZE:-1}
+num_gpu=${NUM_GPU:-1}
+
+# calculate learning rate as sqrt(batchsize) * 0.0002
+lr=$(echo "sqrt($batchsize) * 0.0002" | bc)
+
+# set batchsize to batchsize * num_gpu
+batchsize=$((batchsize * num_gpu))
+
+# create gpu argument, e.g. --gpu_ids 0,1,2,3,4,5,6,7 for 8 gpus
+gpu_ids=$(seq -s, 0 $((num_gpu - 1)))
+ 
 
 singularity exec --nv \
     --bind /proj:/proj \
@@ -20,6 +32,9 @@ singularity exec --nv \
     --name $name \
     --label_nc 0 \
     --no_instance \
+    --batchSize $batchsize \
+    --gpu_ids $gpu_ids \
+    --lr $lr \
     ${@:2}
 
 # train on 512: SCRIPT=train_512p.sh DATAROOT=data/neurad_fullnerf2real sbatch berz_pix2pixhd.sh pix2pixhd4nerf512 
