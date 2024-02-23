@@ -3,9 +3,8 @@
 #SBATCH --nodes 1
 #SBATCH --gpus 1
 #SBATCH --time 1-00:00:00
-#SBATCH --output /proj/agp/users/%u/logs/%A_%a.out
+#SBATCH --output /proj/agp/users/%u/logs/%A.out
 #SBATCH -A Berzelius-2023-211
-#SBATCH --array=1-1
 #SBATCH --job-name=pix2pixhd
 #
 
@@ -18,7 +17,7 @@ singularity exec --nv \
     /proj/agp/containers/pix2pixhd.sif \
     $script \
     --dataroot $dataroot \
-    --name name \
+    --name $name \
     --label_nc 0 \
     --no_instance \
     ${@:2}

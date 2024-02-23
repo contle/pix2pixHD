@@ -1,3 +1,5 @@
 #!/bin/sh
 ### Using labels only
-pix2pixhd-train
+pix2pixhd-train "$@"
+
+# EOF
