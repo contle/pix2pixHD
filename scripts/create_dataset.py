@@ -5,7 +5,7 @@ import os
 
 import concurrent.futures
 
-def copy_file(src, dst):
+def copy_file(src: Path, dst: Path):
     shutil.copy(src, dst)
 
 
@@ -13,12 +13,16 @@ def main(args):
     input_path = Path(args.input_path)
     output_path = Path(args.output_path)
     nuscenes_path = Path(args.nuscenes_path)
+    print(f"Copying images from {input_path} to {output_path}")
+    print(f"Copying images from {nuscenes_path} to {output_path}")
     os.makedirs(output_path, exist_ok=True)
     os.makedirs(output_path / "train_A", exist_ok=True)
     os.makedirs(output_path / "train_B", exist_ok=True)
-    all_image_files = input_path.glob(f'**/*{args.file_extension}')
+    all_image_files = list(input_path.glob(f'**/*{args.file_extension}'))
+    print(f"Found {len(all_image_files)} images in {input_path}")
     all_nuscenes_image_files = list(nuscenes_path.glob(f'**/*{args.file_extension}'))
     all_nuscenes_image_filenames = [file.name for file in all_nuscenes_image_files]
+    print(f"Found {len(all_nuscenes_image_files)} images in {nuscenes_path}")
 
     results = []
     with concurrent.futures.ThreadPoolExecutor(16) as executor:
@@ -26,15 +30,18 @@ def main(args):
             nuscenes_idx = all_nuscenes_image_filenames.index(img_file.name)
             nuscenes_eqiv = all_nuscenes_image_files[nuscenes_idx]
             
-            res = executor.submit(copy_file, (img_file, output_path / "train_B" / img_file.name))
+            res = executor.submit(copy_file, img_file, output_path / "train_B" / img_file.name)
             results.append(res)
-            res = executor.submit(copy_file, (nuscenes_eqiv, output_path / "train_A" / img_file.name))
+            res = executor.submit(copy_file, nuscenes_eqiv, output_path / "train_A" / img_file.name)
             results.append(res)
             # shutil.copy(img_file, output_path / "train_A" / img_file.name)
             # shutil.copy(nuscenes_eqiv, output_path / "train_B" / img_file.name)
-        for j in range(i):
-            if j % 50 == 0:
-                print(j)
+
+            if i % 100 == 0:
+                print(f"{i}/{len(all_image_files)} done")
+
+        for res in results:
+            res.result()
 
     
                             
