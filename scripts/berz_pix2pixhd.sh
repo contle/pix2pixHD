@@ -17,6 +17,10 @@ num_gpu=${NUM_GPU:-1}
 # calculate learning rate as sqrt(batchsize) * 0.0002
 lr=$(echo "sqrt($batchsize) * 0.0002" | bc)
 
+# set lr arg to empty string if test in script name
+# else, --lr $lr
+lr=${script#*test*} && lr="--lr $lr"
+
 # set batchsize to batchsize * num_gpu
 batchsize=$((batchsize * num_gpu))
 
@@ -34,10 +38,11 @@ singularity exec --nv \
     --no_instance \
     --batchSize $batchsize \
     --gpu_ids $gpu_ids \
-    --lr $lr \
+    $lr \
     ${@:2}
 
 # train on 512: SCRIPT=train_512p.sh DATAROOT=data/neurad_fullnerf2real sbatch berz_pix2pixhd.sh pix2pixhd4nerf512 
 # train on 1024: SCRIPT=train_1024p_24G.sh DATAROOT=data/neurad_fullnerf2real sbatch berz_pix2pixhd.sh pix2pixhd4nerf --load_pretrain /checkpoints/pix2pixhd4nerf512/
+# test on 1024: SCRIPT=test_1024p.sh DATAROOT=path/to/realimgs sbatch berz_pix2pixhd.sh <name> --checkpoints_dir /checkpoints/pix2pixhd4nerf512/ 
 #
 #EOF
