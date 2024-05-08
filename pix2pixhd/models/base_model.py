@@ -2,7 +2,13 @@ import os
 import sys
 import torch
 
+
 class BaseModel(torch.nn.Module):
+
+    def __init__(self):
+        super(BaseModel, self).__init__()
+        self.device = 'cuda'
+
     def name(self):
         return 'BaseModel'
 
@@ -55,9 +61,8 @@ class BaseModel(torch.nn.Module):
         if not os.path.isfile(save_path):
             print('%s not exists yet!' % save_path)
             if network_label == 'G':
-                raise(NotImplementedError('Generator must exist!'))
+                raise NotImplementedError('Generator must exist!')
         else:
-            #network.load_state_dict(torch.load(save_path))
             try:
                 network.load_state_dict(torch.load(save_path))
             except:
@@ -74,7 +79,7 @@ class BaseModel(torch.nn.Module):
                         if v.size() == model_dict[k].size():
                             model_dict[k] = v
 
-                    if sys.version_info >= (3,0):
+                    if sys.version_info >= (3, 0):
                         not_initialized = set()
                     else:
                         from sets import Set

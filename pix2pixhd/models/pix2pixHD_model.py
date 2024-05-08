@@ -116,8 +116,7 @@ class Pix2PixHDModel(BaseModel):
             # create one-hot vector for label map
             size = label_map.size()
             oneHot_size = (size[0], self.opt.label_nc, size[2], size[3])
-            input_label = self.Tensor(torch.Size(oneHot_size)).zero_()
-            input_label = input_label.scatter_(1, label_map.long(), 1.0)
+            input_label = torch.zeros(oneHot_size, dtype=torch.float).to(self.device).scatter_(1, label_map.long(), 1.0)
             if self.opt.data_type == 16:
                 input_label = input_label.half()
         if len(self.gpu_ids):
